@@ -1,5 +1,6 @@
 import fs from "node:fs";
 
+// Track releases from upstream openclaw, but our Dockerfile builds from PROPAGANDAnow/openclaw fork.
 const owner = "openclaw";
 const repo = "openclaw";
 const token = process.env.GITHUB_TOKEN;
