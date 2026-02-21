@@ -18,6 +18,9 @@ for (const suffix of ["PUBLIC_PORT", "STATE_DIR", "WORKSPACE_DIR", "GATEWAY_TOKE
     // Best-effort compatibility shim for old Railway templates.
     // Intentionally no warning: Railway templates can still set legacy keys and warnings are noisy.
   }
+  // Avoid forwarding legacy variables into OpenClaw subprocesses.
+  // OpenClaw logs a warning when deprecated CLAWDBOT_* variables are present.
+  delete process.env[oldKey];
 }
 
 // Railway injects PORT at runtime and routes traffic to that port.
@@ -1325,6 +1328,16 @@ proxy.on("error", (err, _req, res) => {
   }
 });
 
+function attachGatewayAuthHeader(req) {
+  // When running behind the Railway wrapper, the gateway is only reachable from this container.
+  // The Control UI running in the browser cannot set custom Authorization headers for WebSocket
+  // connections, so we terminate auth at the wrapper by injecting the token into proxied
+  // requests.
+  if (!req?.headers?.authorization && OPENCLAW_GATEWAY_TOKEN) {
+    req.headers.authorization = `Bearer ${OPENCLAW_GATEWAY_TOKEN}`;
+  }
+}
+
 app.use(async (req, res) => {
   // If not configured, force users to /setup for any non-setup routes.
   if (!isConfigured() && !req.path.startsWith("/setup")) {
@@ -1347,6 +1360,7 @@ app.use(async (req, res) => {
     }
   }
 
+  attachGatewayAuthHeader(req);
   return proxy.web(req, res, { target: GATEWAY_TARGET });
 });
 
@@ -1414,6 +1428,7 @@ server.on("upgrade", async (req, socket, head) => {
     socket.destroy();
     return;
   }
+  attachGatewayAuthHeader(req);
   proxy.ws(req, socket, head, { target: GATEWAY_TARGET });
 });
 
