@@ -22,7 +22,7 @@ WORKDIR /openclaw
 
 # Pin to a known-good ref (tag/branch). Override in Railway template settings if needed.
 # Using a released tag avoids build breakage when `main` temporarily references unpublished packages.
-ARG OPENCLAW_GIT_REF=main
+ARG OPENCLAW_GIT_REF=v2026.2.26
 ARG OPENCLAW_GIT_REPO=https://github.com/PROPAGANDAnow/openclaw.git
 RUN git clone --depth 1 --branch "${OPENCLAW_GIT_REF}" "${OPENCLAW_GIT_REPO}" .
 
