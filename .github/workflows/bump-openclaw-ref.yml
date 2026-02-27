@@ -25,6 +25,7 @@ jobs:
         run: node scripts/bump-openclaw-ref.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORK_PAT: ${{ secrets.FORK_PAT }}
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v6
